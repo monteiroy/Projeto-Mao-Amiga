@@ -1,0 +1,126 @@
+# Dicionário que armazena o total de itens doados por subtipo/detalhe
+inventario = {
+    # Estrutura: "alimentos": {"arroz": {"1kg": 10, "5kg": 2}, "feijão": {"500g": 5}}
+    "alimentos": {},
+    # Estrutura: "roupas": {"camisa": {"M": 5, "G": 3}, "short": {"P": 2}}
+    "roupas": {}
+}
+
+# Lista que guarda o histórico de doadores e suas doações
+doadores = []
+
+# Função para adicionar uma nova doação
+def adicionar_doacao():
+    nome = input("Nome do doador: ")
+    tipo = input("Tipo da doação (alimentos/roupas): ").lower()
+    
+    # Verifica se o tipo de doação é válido
+    if tipo in inventario:
+        item = input(f"Especifique o item doado ({tipo}): ").lower()
+        detalhe = "" # Variável para armazenar o detalhe (peso ou tamanho)
+
+        # --- Lógica Condicional para Detalhes ---
+        if tipo == "alimentos":
+            detalhe = input("Peso do alimento (ex: 1kg, 500g): ").lower()
+        elif tipo == "roupas":
+            detalhe = input("Tamanho da roupa (ex: P, M, G): ").upper()
+        # ----------------------------------------
+        
+        # Pede a quantidade
+        while True:
+            try:
+                quantidade = int(input("Quantidade doada: "))
+                if quantidade > 0:
+                    break
+                else:
+                    print("A quantidade deve ser um número positivo.")
+            except ValueError:
+                print("Entrada inválida. Por favor, digite um número inteiro.")
+
+
+        # 1. Atualiza o inventário total por item e detalhe (sub-sub-dicionário)
+        
+        # Garante que o item (arroz, camisa) exista no inventário da categoria
+        if item not in inventario[tipo]:
+            inventario[tipo][item] = {} # Cria o dicionário interno para os detalhes (peso/tamanho)
+
+        # Adiciona a quantidade ao detalhe específico (1kg, M, etc.)
+        # .get(detalhe, 0) pega a quantidade atual daquele detalhe ou 0 se for a primeira vez
+        inventario[tipo][item][detalhe] = inventario[tipo][item].get(detalhe, 0) + quantidade
+        
+        # 2. Adiciona o doador ao histórico
+        doadores.append({"nome": nome, "tipo": tipo, "item": item, "detalhe": detalhe, "quantidade": quantidade})
+        
+        print(f"Doação de {quantidade} unidades de {item} ({detalhe}) registrada com sucesso!\n")
+    else:
+        print("Tipo de doação inválido. Use 'alimentos' ou 'roupas'.\n")
+
+# Função para mostrar o resumo total das doações
+def mostrar_resumo():
+    print("\n📦 Resumo Detalhado das Doações:")
+    total_geral = 0
+    
+    for tipo, itens in inventario.items():
+        print(f"\n Categoria: {tipo.upper()}")
+        
+        total_por_categoria = 0
+        
+        if itens:
+            for item, detalhes in itens.items():
+                print(f"  > {item.capitalize()}:")
+                
+                total_por_item = 0
+                for detalhe, quantidade in detalhes.items():
+                    # Ajusta a exibição para ser mais informativa
+                    rotulo = "Peso" if tipo == "alimentos" else "Tamanho"
+                    print(f"    - {rotulo} **{detalhe}**: {quantidade} unidades")
+                    total_por_item += quantidade
+                
+                print(f"    (Total de {item.capitalize()}: {total_por_item} unidades)")
+                total_por_categoria += total_por_item
+        else:
+            print("Nenhum item registrado.")
+            
+        print(f"\nTotal geral de unidades de {tipo}: {total_por_categoria}\n")
+        total_geral += total_por_categoria
+
+    print(f"Total geral de unidades no inventário: {total_geral}")
+    print()
+
+# Função para listar todos os doadores e suas doações
+def listar_doadores():
+    print("\n👥 Lista de Doadores:")
+    if doadores:
+        for d in doadores:
+            # Exibe o detalhe (peso/tamanho)
+            print(f"{d['nome']} doou {d['quantidade']} unidades de {d['item']} (Detalhe: {d['detalhe']}) - Categoria: {d['tipo']}")
+    else:
+        print("Nenhum doador registrado ainda.")
+    print()
+
+# Menu principal do programa
+def menu():
+    while True:
+        print("\nGerenciamento de Doações")
+        print("1. Adicionar doação")
+        print("2. Mostrar resumo detalhado")
+        print("3. Listar doadores")
+        print("4. Sair")
+        opcao = input("Escolha uma opção: ")
+
+        # Chama a função correspondente à opção escolhida
+        if opcao == "1":
+            adicionar_doacao()
+        elif opcao == "2":
+            mostrar_resumo()
+        elif opcao == "3":
+            listar_doadores()
+        elif opcao == "4":
+            print("Encerrando o sistema. Até mais!")
+            break
+        else:
+            print("Opção inválida. Tente novamente.\n")
+
+# Inicia o programa chamando o menu
+if __name__ == "__main__":
+    menu()
